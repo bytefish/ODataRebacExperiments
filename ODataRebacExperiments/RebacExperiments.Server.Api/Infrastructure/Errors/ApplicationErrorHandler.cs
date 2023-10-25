@@ -52,6 +52,8 @@ namespace RebacExperiments.Server.Api.Infrastructure.Errors
 
         private bool TryGetFirstException(ModelStateDictionary modelStateDictionary, [NotNullWhen(true)] out Exception? e)
         {
+            _logger.TraceMethodEntry();
+
             e = null;
 
             foreach (var modelStateEntry in modelStateDictionary)
