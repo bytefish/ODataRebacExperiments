@@ -1,4 +1,4 @@
-# Experimenting with Relationship-based Access Control #
+# Experimenting with Relationship-based Access Control and ASP.NET Core OData #
 
 [written an article about the Google Zanzibar Data Model]: https://www.bytefish.de/blog/relationship_based_acl_with_google_zanzibar.html
 
@@ -24,11 +24,17 @@ I have previously [written an article about the Google Zanzibar Data Model], and
 pretty nice SQL statements to make sense of the it. This repository implements Relationship-based 
 Access Control using ASP.NET Core, EntityFramework Core and Microsoft SQL Server.
 
-The blog article for this repository can be found at:
+## About this Repository ##
+
+This repository is an OData-enabled implementation of the RESTful API implementing ReBAC in ASP.NET Core:
 
 * [https://www.bytefish.de/blog/aspnetcore_rebac.html](https://www.bytefish.de/blog/aspnetcore_rebac.html)
 
-## Running the Example ##
+The blog article for this repository can be found at:
+
+* [https://www.bytefish.de/blog/aspnetcore_rebac_odata.html](https://www.bytefish.de/blog/aspnetcore_rebac_odata.html)
+
+## OData API Example using a .http File ##
 
 We got everything in place. We can now start the application and use Swagger to query it. But Visual Studio 2022 
 now comes with the "Endpoints Explorer" to execute HTTP Requests against HTTP endpoints. Though it's not fully-fledged 
@@ -91,12 +97,18 @@ permitted to update the data of the `UserTask`.
 
 ### HTTP Endpoints Explorer Script ###
 
-We start by signing in `philipp@bytefish.de`:
+We start by defining the Host Address:
+
+```
+@RebacExperiments.Server.Api_HostAddress = https://localhost:5000/odata
+```
+
+Then we signin `philipp@bytefish.de` using the `SignInUser` Action:
 
 ```
 ### Sign In "philipp@bytefish.de"
 
-POST {{RebacExperiments.Server.Api_HostAddress}}/Authentication/sign-in
+POST {{RebacExperiments.Server.Api_HostAddress}}/SignInUser
 Content-Type: application/json
 
 {
@@ -106,79 +118,96 @@ Content-Type: application/json
 }
 ```
 
-Then we get all Tasks by querying `/UserTasks` endpoint:
+And then we get all `UserTask` entities for the current user:
 
 ```
-### Get all UserTasks
+### Get all UserTasks for "philipp@bytefish.de"
 
 GET {{RebacExperiments.Server.Api_HostAddress}}/UserTasks
 ```
 
-As expected by the example setup, the result has the `UserTask` with ID `152` and ID `323` as body:
+The response is going to contain two entities:
 
-```
-[
-  {
-    "title": "Call Back",
-    "description": "Call Back Philipp Wagner",
-    "dueDateTime": null,
-    "reminderDateTime": null,
-    "completedDateTime": null,
-    "assignedTo": null,
-    "userTaskPriority": 1,
-    "userTaskStatus": 1,
-    "id": 152,
-    "rowVersion": "AAAAAAAAB\u002Bw=",
-    "lastEditedBy": 1,
-    "validFrom": "2013-01-01T00:00:00",
-    "validTo": "9999-12-31T23:59:59.9999999"
-  },
-  {
-    "title": "Sign Document",
-    "description": "You need to Sign a Document",
-    "dueDateTime": null,
-    "reminderDateTime": null,
-    "completedDateTime": null,
-    "assignedTo": null,
-    "userTaskPriority": 2,
-    "userTaskStatus": 2,
-    "id": 323,
-    "rowVersion": "AAAAAAAAB\u002B0=",
-    "lastEditedBy": 1,
-    "validFrom": "2013-01-01T00:00:00",
-    "validTo": "9999-12-31T23:59:59.9999999"
-  }
-]
-```
-
-We sign out the user `philipp@bytefish.de`:
-
-```
-### Sign Out "philipp@bytefish.de"
-
-POST {{RebacExperiments.Server.Api_HostAddress}}/Authentication/sign-out
+```json
+{
+  "@odata.context": "https://localhost:5000/odata/$metadata#UserTasks",
+  "value": [
+    {
+      "title": "Call Back",
+      "description": "Call Back Philipp Wagner",
+      "dueDateTime": null,
+      "reminderDateTime": null,
+      "completedDateTime": null,
+      "assignedTo": null,
+      "userTaskPriority": "Low",
+      "userTaskStatus": "NotStarted",
+      "id": 152,
+      "rowVersion": "AAAAAAAAB\u002Bw=",
+      "lastEditedBy": 1,
+      "validFrom": "2013-01-01T00:00:00\u002B01:00",
+      "validTo": "9999-12-31T23:59:59.9999999\u002B01:00"
+    },
+    {
+      "title": "Sign Document",
+      "description": "You need to Sign a Document",
+      "dueDateTime": null,
+      "reminderDateTime": null,
+      "completedDateTime": null,
+      "assignedTo": null,
+      "userTaskPriority": "Normal",
+      "userTaskStatus": "InProgress",
+      "id": 323,
+      "rowVersion": "AAAAAAAAB\u002B0=",
+      "lastEditedBy": 1,
+      "validFrom": "2013-01-01T00:00:00\u002B01:00",
+      "validTo": "9999-12-31T23:59:59.9999999\u002B01:00"
+    }
+  ]
+}
 ```
 
-And we query the `/UserTasks` endpoint to get the list of `UserTask` entities: 
+We can then introduce some OData Goodies and say we want only `1` entity, the results should be 
+ordered by the `id` property and the response should contain the total number of entities the user 
+is authorized to acces.
 
 ```
-### Check for 401 Unauthorized when not Authenticated
+### Get the first task and return the total count of Entities visible to "philipp@bytefish.de"
 
-GET {{RebacExperiments.Server.Api_HostAddress}}/UserTasks
+GET {{RebacExperiments.Server.Api_HostAddress}}/UserTasks?$top=1&$orderby=id&$count=true
 ```
 
-The Backend correctly returns a `401` Status Code, because the user isn't authenticated:
+The result is going to contain the `@odata.count` property and have `1` task only.
 
 ```
-Status: 401 UnauthorizedTime: 7,48 msSize: 0 bytes
+{
+  "@odata.context": "https://localhost:5000/odata/$metadata#UserTasks",
+  "@odata.count": 2,
+  "value": [
+    {
+      "title": "Call Back",
+      "description": "Call Back Philipp Wagner",
+      "dueDateTime": null,
+      "reminderDateTime": null,
+      "completedDateTime": null,
+      "assignedTo": null,
+      "userTaskPriority": "Low",
+      "userTaskStatus": "NotStarted",
+      "id": 152,
+      "rowVersion": "AAAAAAAAB\u002Bw=",
+      "lastEditedBy": 1,
+      "validFrom": "2013-01-01T00:00:00\u002B01:00",
+      "validTo": "9999-12-31T23:59:59.9999999\u002B01:00"
+    }
+  ]
+}
 ```
 
-Then we sign in the user `max@mustermann.local`:
+We can then sign in as `max@mustermann.local`.
 
 ```
 ### Sign In as "max@mustermann.local"
 
-POST {{RebacExperiments.Server.Api_HostAddress}}/Authentication/sign-in
+POST {{RebacExperiments.Server.Api_HostAddress}}/SignInUser
 Content-Type: application/json
 
 {
@@ -188,7 +217,7 @@ Content-Type: application/json
 }
 ```
 
-And querying the `/UserTasks` endpoint:
+If you try to get all `UserTask` entities of `max@mustermann.local`:
 
 ```
 ### Get all UserTasks for "max@mustermann.local"
@@ -196,56 +225,32 @@ And querying the `/UserTasks` endpoint:
 GET {{RebacExperiments.Server.Api_HostAddress}}/UserTasks
 ```
 
-Returns only `UserTask` with ID `152`, as expected:
+There will be `1` task only.
 
-```
-[
-  {
-    "title": "Call Back",
-    "description": "Call Back Philipp Wagner",
-    "dueDateTime": null,
-    "reminderDateTime": null,
-    "completedDateTime": null,
-    "assignedTo": null,
-    "userTaskPriority": 1,
-    "userTaskStatus": 1,
-    "id": 152,
-    "rowVersion": "AAAAAAAAB\u002Bw=",
-    "lastEditedBy": 1,
-    "validFrom": "2013-01-01T00:00:00",
-    "validTo": "9999-12-31T23:59:59.9999999"
-  }
-]
-```
-
-Since we are not the `owner` of the Task `152`, we shouldn't be able to delete it:
-
-```
-### Delete UserTask 152 as "max@mustermann.local" (he is not the owner)
-DELETE {{RebacExperiments.Server.Api_HostAddress}}/UserTasks/152
-```
-
-And as expected, we are not permitted to delete the task:
-
-```
-Status: 403 ForbiddenTime: 190,91 msSize: 1154 bytes
-
-application/problem+json; charset=utf-8, 1154 bytes
-
+```json
 {
-  "type": "EntityUnauthorizedAccessException",
-  "title": "EntityUnauthorizedAccess (User = 7, Entity = UserTask, EntityID = 152)",
-  "status": 403,
-  "instance": "/UserTasks/152",
-  "error-code": "Entity:000002",
-  "trace-id": "0HMUJJ9QPSEE0:00000001",
-  "exception": "RebacExperiments.Server.Api.Infrastructure.Exceptions.EntityUnauthorizedAccessException: Exception of type \u0027RebacExperiments.Server.Api.Infrastructure.Exceptions.EntityUnauthorizedAccessException\u0027 was thrown.\r\n   at RebacExperiments.Server.Api.Services.UserTaskService.DeleteUserTaskAsync(ApplicationDbContext context, Int32 userTaskId, Int32 currentUserId, CancellationToken cancellationToken) in C:\\Users\\philipp\\source\\repos\\bytefish\\RebacExperiments\\RebacExperiments\\RebacExperiments.Server.Api\\Services\\UserTaskService.cs:line 148\r\n   at RebacExperiments.Server.Api.Controllers.UserTasksController.DeleteUserTask(ApplicationDbContext context, IUserTaskService userTaskService, Int32 userTaskId, CancellationToken cancellationToken) in C:\\Users\\philipp\\source\\repos\\bytefish\\RebacExperiments\\RebacExperiments\\RebacExperiments.Server.Api\\Controllers\\UserTasksController.cs:line 141"
+  "@odata.context": "https://localhost:5000/odata/$metadata#UserTasks",
+  "value": [
+    {
+      "title": "Call Back",
+      "description": "Call Back Philipp Wagner",
+      "dueDateTime": null,
+      "reminderDateTime": null,
+      "completedDateTime": null,
+      "assignedTo": null,
+      "userTaskPriority": "Low",
+      "userTaskStatus": "NotStarted",
+      "id": 152,
+      "rowVersion": "AAAAAAAAB\u002Bw=",
+      "lastEditedBy": 1,
+      "validFrom": "2013-01-01T00:00:00\u002B01:00",
+      "validTo": "9999-12-31T23:59:59.9999999\u002B01:00"
+    }
+  ]
 }
 ```
 
-The user `max@mustermann.local` is allowed to create a `UserTask` though. We have seen, that the person 
-creating a `UserTask` is automatically the `owner` of the task and the entire organization of the user 
-can view it.
+Now we'll create a new `UserTask` "API HTTP File Example":
 
 ```
 ### Create a new UserTask "API HTTP File Example" as "max@mustermann.local"
@@ -260,39 +265,57 @@ Content-Type: application/json
     "reminderDateTime": null,
     "completedDateTime": null,
     "assignedTo": null,
-    "userTaskPriority": 2,
-    "userTaskStatus": 2
+    "userTaskPriority": "Normal",
+    "userTaskStatus": "NotStarted"
 }
 ```
 
-We get a successful response with the created task as the response payload:
+And we can see, that `max@mustermann.local` now sees both `UserTask` entities:
 
-```
-Status: 200 OKTime: 264,41 msSize: 335 bytes
-
+```json
 {
-  "title": "API HTTP File Example",
-  "description": "API HTTP File Example",
-  "dueDateTime": null,
-  "reminderDateTime": null,
-  "completedDateTime": null,
-  "assignedTo": null,
-  "userTaskPriority": 2,
-  "userTaskStatus": 2,
-  "id": 38188,
-  "rowVersion": "AAAAAAAAB/k=",
-  "lastEditedBy": 7,
-  "validFrom": "2023-10-23T08:02:41.8051703",
-  "validTo": "9999-12-31T23:59:59.9999999"
+  "@odata.context": "https://localhost:5000/odata/$metadata#UserTasks",
+  "value": [
+    {
+      "title": "Call Back",
+      "description": "Call Back Philipp Wagner",
+      "dueDateTime": null,
+      "reminderDateTime": null,
+      "completedDateTime": null,
+      "assignedTo": null,
+      "userTaskPriority": "Low",
+      "userTaskStatus": "NotStarted",
+      "id": 152,
+      "rowVersion": "AAAAAAAAB\u002Bw=",
+      "lastEditedBy": 1,
+      "validFrom": "2013-01-01T00:00:00\u002B01:00",
+      "validTo": "9999-12-31T23:59:59.9999999\u002B01:00"
+    },
+    {
+      "title": "API HTTP File Example",
+      "description": "API HTTP File Example",
+      "dueDateTime": null,
+      "reminderDateTime": null,
+      "completedDateTime": null,
+      "assignedTo": null,
+      "userTaskPriority": "Normal",
+      "userTaskStatus": "NotStarted",
+      "id": 38191,
+      "rowVersion": "AAAAAAAACAY=",
+      "lastEditedBy": 7,
+      "validFrom": "2023-10-25T19:58:44.8007138\u002B02:00",
+      "validTo": "9999-12-31T23:59:59.9999999\u002B01:00"
+    }
+  ]
 }
 ```
 
-If we now sign-in "philipp@bytefish.de":
+If we sign in as `philipp@bytefish.de` again:
 
 ```
 ### Sign In "philipp@bytefish.de"
 
-POST {{RebacExperiments.Server.Api_HostAddress}}/Authentication/sign-in
+POST {{RebacExperiments.Server.Api_HostAddress}}/SignInUser
 Content-Type: application/json
 
 {
@@ -302,22 +325,45 @@ Content-Type: application/json
 }
 ```
 
-And query for the `UserTasks`:
+We can see with a call to `/UserTasks`, that he doesn't see the new `UserTask` at all.
 
+```json
+{
+  "@odata.context": "https://localhost:5000/odata/$metadata#UserTasks",
+  "value": [
+    {
+      "title": "Call Back",
+      "description": "Call Back Philipp Wagner",
+      "dueDateTime": null,
+      "reminderDateTime": null,
+      "completedDateTime": null,
+      "assignedTo": null,
+      "userTaskPriority": "Low",
+      "userTaskStatus": "NotStarted",
+      "id": 152,
+      "rowVersion": "AAAAAAAAB\u002Bw=",
+      "lastEditedBy": 1,
+      "validFrom": "2013-01-01T00:00:00\u002B01:00",
+      "validTo": "9999-12-31T23:59:59.9999999\u002B01:00"
+    },
+    {
+      "title": "Sign Document",
+      "description": "You need to Sign a Document",
+      "dueDateTime": null,
+      "reminderDateTime": null,
+      "completedDateTime": null,
+      "assignedTo": null,
+      "userTaskPriority": "Normal",
+      "userTaskStatus": "InProgress",
+      "id": 323,
+      "rowVersion": "AAAAAAAAB\u002B0=",
+      "lastEditedBy": 1,
+      "validFrom": "2013-01-01T00:00:00\u002B01:00",
+      "validTo": "9999-12-31T23:59:59.9999999\u002B01:00"
+    }
+  ]
+}
 ```
-### Get all UserTasks for "philipp@bytefish.de"
-
-GET {{RebacExperiments.Server.Api_HostAddress}}/UserTasks
-```
-
-We cannot see the "API HTTP File Example" Task created by the other user, because 
-`philipp@bytefish.de` isn't part of the Organization and has no relationship to the 
-task.
-
-And this is where our example ends. 
-
-Feel free to play around with the example as much as you like!
-
 
 
 ## Further Reading ##
