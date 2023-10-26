@@ -16,8 +16,11 @@ namespace RebacExperiments.Server.Api.Infrastructure.OData
 
             modelBuilder.EntitySet<UserTask>("UserTasks");
             
-            modelBuilder.EnumType<UserTaskStatusEnum>();
-            modelBuilder.EnumType<UserTaskPriorityEnum>();
+            modelBuilder.EnumType<UserTaskStatusEnum>()
+                .RemoveMember(UserTaskStatusEnum.None);
+
+            modelBuilder.EnumType<UserTaskPriorityEnum>()
+                .RemoveMember(UserTaskPriorityEnum.None);
 
             // Authentication
             RegisterSignInUserAction(modelBuilder);

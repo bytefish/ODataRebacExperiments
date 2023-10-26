@@ -35,26 +35,24 @@ namespace RebacExperiments.Server.Api.Infrastructure.Errors
 
             ODataError error = new ODataError()
             {
-                ErrorCode = ErrorCodes.ValidationFailed,
+                ErrorCode = ErrorCodes.BadRequest,
                 Message = "One or more validation errors occured",
                 Details = GetODataErrorDetails(modelStateDictionary),
-
             };
 
-            // If there was an exception, use this as ODataInnerError
-            if (TryGetFirstException(modelStateDictionary, out var exception))
-            {
-                AddInnerError(httpContext, error, exception);
-            }
+            // If we have something like a Deserialization issue, the ModelStateDictionary has
+            // a lower-level Exception. We cannot do anything sensible with exceptions, so 
+            // we add them to the InnerError.
+            var firstException = GetFirstException(modelStateDictionary);
 
+            AddInnerError(httpContext, error, firstException);
+            
             return new BadRequestObjectResult(error);
         }
 
-        private bool TryGetFirstException(ModelStateDictionary modelStateDictionary, [NotNullWhen(true)] out Exception? e)
+        private Exception? GetFirstException(ModelStateDictionary modelStateDictionary)
         {
             _logger.TraceMethodEntry();
-
-            e = null;
 
             foreach (var modelStateEntry in modelStateDictionary)
             {
@@ -62,14 +60,12 @@ namespace RebacExperiments.Server.Api.Infrastructure.Errors
                 {
                     if (modelError.Exception != null)
                     {
-                        e = modelError.Exception;
-
-                        return true;
+                        return modelError.Exception;
                     }
                 }
             }
 
-            return false;
+            return null;
         }
 
         private List<ODataErrorDetail> GetODataErrorDetails(ModelStateDictionary modelStateDictionary)
@@ -93,9 +89,14 @@ namespace RebacExperiments.Server.Api.Infrastructure.Errors
                         continue;
                     }
 
+                    // A ModelStateDictionary has nothing like an "ErrorCode" and it's not 
+                    // possible with existing infrastructure to get an "ErrorCode" here. So 
+                    // we set a generic one.
+                    var errorCode = ErrorCodes.ValidationFailed;
+
                     var odataErrorDetail = new ODataErrorDetail
                     {
-                        ErrorCode = ErrorCodes.ValidationFailed,
+                        ErrorCode = errorCode, 
                         Message = modelError.ErrorMessage,
                         Target = modelStateEntry.Key,
                     };
@@ -201,7 +202,7 @@ namespace RebacExperiments.Server.Api.Infrastructure.Errors
             };
         }
 
-        private void AddInnerError(HttpContext httpContext, ODataError error, Exception e)
+        private void AddInnerError(HttpContext httpContext, ODataError error, Exception? e)
         {
             _logger.TraceMethodEntry();
 
@@ -209,7 +210,7 @@ namespace RebacExperiments.Server.Api.Infrastructure.Errors
 
             error.InnerError.Properties["trace-id"] = new ODataPrimitiveValue(httpContext.TraceIdentifier);
 
-            if (_options.IncludeExceptionDetails)
+            if (e != null && _options.IncludeExceptionDetails)
             {
                 error.InnerError.Message = e.Message;
                 error.InnerError.StackTrace = e.StackTrace;

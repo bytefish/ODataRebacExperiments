@@ -11,6 +11,11 @@
         public const string InternalServerError = "System:000001";
 
         /// <summary>
+        /// BadRequest.
+        /// </summary>
+        public const string BadRequest = "System:000002";
+
+        /// <summary>
         /// Validation Error.
         /// </summary>
         public const string ValidationFailed = "Validation:000001";

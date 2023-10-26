@@ -1,10 +1,16 @@
 ﻿// Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.OData.UriParser;
+using RebacExperiments.Server.Api.Infrastructure.Resources;
+using System.ComponentModel.DataAnnotations;
+
 namespace RebacExperiments.Server.Api.Models
 {
     /// <summary>
     /// A User Task.
     /// </summary>
+    [ModelMetadataType(typeof(UserTaskMetadata))]
     public class UserTask : Entity
     {
         /// <summary>
@@ -46,5 +52,16 @@ namespace RebacExperiments.Server.Api.Models
         /// Gets or sets the user the task status.
         /// </summary>
         public UserTaskStatusEnum UserTaskStatus { get; set; }
+    }
+
+    public class UserTaskMetadata
+    {
+        [Required(ErrorMessageResourceName = nameof(ErrorMessages.Validation_Required), ErrorMessageResourceType = typeof(ErrorMessages))]
+        [StringLength(255, ErrorMessageResourceName = nameof(ErrorMessages.Validation_StringLength), ErrorMessageResourceType = typeof(ErrorMessages))]
+        public required string Title { get; set; }
+
+        [Required(ErrorMessageResourceName = nameof(ErrorMessages.Validation_Required), ErrorMessageResourceType = typeof(ErrorMessages))]
+        [StringLength(2000, ErrorMessageResourceName = nameof(ErrorMessages.Validation_StringLength), ErrorMessageResourceType = typeof(ErrorMessages))]
+        public required string Description { get; set; }
     }
 }
