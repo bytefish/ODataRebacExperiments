@@ -1,7 +1,6 @@
 ﻿// Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.OData.UriParser;
 using RebacExperiments.Server.Api.Infrastructure.Resources;
 using System.ComponentModel.DataAnnotations;
 
