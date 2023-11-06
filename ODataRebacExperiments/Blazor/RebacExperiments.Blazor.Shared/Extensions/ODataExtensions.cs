@@ -8,14 +8,19 @@ namespace RebacExperiments.Blazor.Shared.Extensions
     /// </summary>
     public static class ODataExtensions
     {
-        public static long? Count<TEntityType>(this ODataEntitiesResponse<TEntityType> response)
+        /// <summary>
+        /// Gets the @odata.count value or <see cref="0"/>, if none was found.
+        /// </summary>
+        /// <param name="response">OData Response with Metadata included</param>
+        /// <returns>Value of the "@odata.count" Metadata</returns>
+        public static long Count(this ODataResponse response)
         {
-            if(!TryGetCount(response.Metadata, out var count)
+            if(!TryGetCount(response.Metadata, out var count))
             {
-                return null;
+                return 0;
             }
 
-            return count;
+            return count.Value;
         }
 
         private static bool TryGetCount(IDictionary<string, object?> metadata, [NotNullWhen(true)] out long? count)

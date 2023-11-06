@@ -52,7 +52,7 @@ namespace RebacExperiments.Blazor.Pages
             {
                 var response = await GetUserTasks(request);
 
-                return GridItemsProviderResult.From(items: response.ToList(), totalItemCount: (int)response.Count);
+                return GridItemsProviderResult.From(items: response.Entities, totalItemCount: (int)response.Count());
             };
             
             return base.OnInitializedAsync();
@@ -72,7 +72,7 @@ namespace RebacExperiments.Blazor.Pages
             return DataGrid.RefreshDataAsync();
         }
 
-        private async Task<QueryOperationResponse<UserTask>> GetUserTasks(GridItemsProviderRequest<UserTask> request)
+        private async Task<ODataEntitiesResponse<UserTask>> GetUserTasks(GridItemsProviderRequest<UserTask> request)
         {
             
             // Extract all Sort Columns
@@ -88,16 +88,11 @@ namespace RebacExperiments.Blazor.Pages
                 .Build();
 
             // Get the Data:
-            var entities = await ODataService.GetEntitiesAsync<UserTask>("", parameters, default);
+            var response = await ODataService.GetEntitiesAsync<UserTask>("", parameters, default);
 
-
+            return response;
+            
         }
 
-        private DataServiceQuery<UserTask> GetDataServiceQuery(List<SortColumn> sortColumns, List<FilterDescriptor> filters,  int pageNumber, int pageSize)
-        {
-            var httpRequestMessage = new HttpRequestMessageBuilder("UserTasks", HttpMethod.Get);
-
-            return (DataServiceQuery<UserTask>)query;
-        }
     }
 }

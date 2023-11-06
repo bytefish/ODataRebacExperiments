@@ -151,6 +151,8 @@ namespace RebacExperiments.Blazor.Shared.Extensions
 
         private void ApplyODataParameters(HttpRequestMessageBuilder httpRequestMessageBuilder, ODataQueryParameters parameters)
         {
+            _logger.TraceMethodEntry();
+
             if(parameters.Skip != null)
             {
                 httpRequestMessageBuilder.SetQueryString("$skip", parameters.Skip.ToString()!);
