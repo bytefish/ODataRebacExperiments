@@ -13,8 +13,8 @@ namespace RebacExperiments.Blazor.Infrastructure
     /// </summary>
     public static class Converters
     {
-         public static List<SortColumn> ConvertToSortColumns(IReadOnlyCollection<SortedProperty>? source)
-         {
+        public static List<SortColumn> ConvertToSortColumns(IReadOnlyCollection<SortedProperty>? source)
+        {
             if (source == null)
             {
                 return new();

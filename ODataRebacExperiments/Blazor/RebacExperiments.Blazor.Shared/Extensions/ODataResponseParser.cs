@@ -20,6 +20,37 @@ namespace RebacExperiments.Blazor.Shared.Extensions
             _jsonSerializerOptions = jsonSerializerOptions;
         }
 
+        public async Task<ODataResponse> ParseAsync(HttpResponseMessage httpResponseMessage, CancellationToken cancellationToken)
+        {
+            _logger.TraceMethodEntry();
+
+            if (!httpResponseMessage.IsSuccessStatusCode)
+            {
+                var odataError = await GetODataErrorAsync(httpResponseMessage, cancellationToken);
+
+                throw new ODataErrorException($"HTTP Request failed with Status {httpResponseMessage.StatusCode}")
+                {
+                    ODataError = odataError
+                };
+            }
+
+            var content = await httpResponseMessage.Content
+                .ReadFromJsonAsync<JsonObject>(_jsonSerializerOptions, cancellationToken)
+                .ConfigureAwait(false);
+
+            if (content == null)
+            {
+                throw new InvalidOperationException("");
+            }
+
+            return new ODataResponse
+            {
+                Status = (int)httpResponseMessage.StatusCode,
+                Headers = GetHeaders(httpResponseMessage),
+                Metadata = GetMetadata(content)
+            };
+        }
+
         public async Task<ODataEntityResponse<TEntityType>> ParseEntityAsync<TEntityType>(HttpResponseMessage httpResponseMessage, CancellationToken cancellationToken)
         {
             _logger.TraceMethodEntry();

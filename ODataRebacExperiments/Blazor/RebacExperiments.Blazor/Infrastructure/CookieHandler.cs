@@ -1,7 +1,7 @@
 ﻿
 using Microsoft.AspNetCore.Components.WebAssembly.Http;
 
-namespace RebacExperiments.Blazor.Shared.Infrastructure
+namespace RebacExperiments.Blazor.Infrastructure
 {
     public class CookieHandler : DelegatingHandler
     {

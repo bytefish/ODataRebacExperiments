@@ -7,11 +7,6 @@ using System.Text.Json;
 
 namespace RebacExperiments.Blazor.Shared.Extensions
 {
-    public class ODataServiceOptions
-    {
-        public required string ServiceUri { get; set; }
-    }
-
     public class ODataService
     {
         private readonly ILogger<ODataService> _logger;
@@ -27,7 +22,7 @@ namespace RebacExperiments.Blazor.Shared.Extensions
             _parser = parser;
         }
 
-        public async Task<ODataEntityResponse<TEntityType>> GetEntity<TEntityType>(string url, CancellationToken cancellationToken)
+        public async Task<ODataEntityResponse<TEntityType>> GetEntityAsync<TEntityType>(string url, CancellationToken cancellationToken)
         {
             _logger.TraceMethodEntry();
 
@@ -48,7 +43,7 @@ namespace RebacExperiments.Blazor.Shared.Extensions
             return response;
         }
 
-        public async Task<ODataEntitiesResponse<TEntityType>> GetEntities<TEntityType>(string url, CancellationToken cancellationToken)
+        public async Task<ODataEntitiesResponse<TEntityType>> GetEntitiesAsync<TEntityType>(string url, CancellationToken cancellationToken)
         {
             _logger.TraceMethodEntry();
 
@@ -77,16 +72,19 @@ namespace RebacExperiments.Blazor.Shared.Extensions
             // Serialize to JSON
             var json = JsonSerializer.Serialize(entity, _jsonSerializerOptions);
 
+            // Builds the PATCH Request Message
             var httpRequestMessage = new HttpRequestMessageBuilder(url, HttpMethod.Patch)
                 .SetStringContent(json, Encoding.UTF8, "application/json")
                 .SetHeader("Content-Type", "application/json;odata.metadata=minimal;odata.streaming=true;IEEE754Compatible=false;")
                 .SetHeader("Prefer", "return=representation")
-            .Build();
+                .Build();
 
+            // Sends the HttpRequestMessage to the OData Service
             var httpResponseMessage = await _httpClient
                 .SendAsync(httpRequestMessage, cancellationToken)
                 .ConfigureAwait(false);
 
+            // Parses the OData Result
             var response = await _parser.ParseEntityAsync<TEntityType>(httpResponseMessage, cancellationToken)
                 .ConfigureAwait(false);
 
@@ -94,6 +92,50 @@ namespace RebacExperiments.Blazor.Shared.Extensions
             return response;
         }
 
-    
+        public async Task<ODataEntityResponse<TEntityType>> CreateAsync<TEntityType>(string url, TEntityType entity, CancellationToken cancellationToken)
+        {
+            _logger.TraceMethodEntry();
+
+            // Serialize to JSON
+            var json = JsonSerializer.Serialize(entity, _jsonSerializerOptions);
+
+            // Builds the POST Request Message
+            var httpRequestMessage = new HttpRequestMessageBuilder(url, HttpMethod.Post)
+                .SetStringContent(json, Encoding.UTF8, "application/json")
+                .SetHeader("Content-Type", "application/json;odata.metadata=minimal;odata.streaming=true;IEEE754Compatible=false;")
+                .SetHeader("Prefer", "return=representation")
+                .Build();
+
+            // Sends the HttpRequestMessage to the OData Service
+            var httpResponseMessage = await _httpClient
+                .SendAsync(httpRequestMessage, cancellationToken)
+                .ConfigureAwait(false);
+
+            // Parses the OData Result
+            var response = await _parser.ParseEntityAsync<TEntityType>(httpResponseMessage, cancellationToken)
+                .ConfigureAwait(false);
+
+            return response;
+        }
+
+
+        public async Task<ODataResponse> DeleteAsync(string url, CancellationToken cancellationToken)
+        {
+            _logger.TraceMethodEntry();
+
+            // Builds the DELETE Request Message
+            var httpRequestMessage = new HttpRequestMessageBuilder(url, HttpMethod.Delete).Build();
+
+            // Sends the HttpRequestMessage to the OData Service
+            var httpResponseMessage = await _httpClient
+                .SendAsync(httpRequestMessage, cancellationToken)
+                .ConfigureAwait(false);
+
+            // Parses the OData Result
+            var response = await _parser.ParseAsync(httpResponseMessage, cancellationToken)
+                .ConfigureAwait(false);
+
+            return response;
+        }
     }
 }

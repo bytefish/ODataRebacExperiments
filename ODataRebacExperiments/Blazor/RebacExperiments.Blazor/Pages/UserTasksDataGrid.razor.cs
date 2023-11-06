@@ -1,13 +1,14 @@
 ﻿// Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using RebacExperiments.Blazor.Components;
-using RebacExperiments.Blazor.Infrastructure;
 using RebacExperiments.Blazor.Shared.Models;
 using Microsoft.AspNetCore.Components;
 using Microsoft.Fast.Components.FluentUI;
 using Microsoft.OData.Client;
 using RebacExperiments.Shared.Models;
 using RebacExperiments.Blazor.Shared.Http;
+using RebacExperiments.Blazor.Infrastructure;
+using RebacExperiments.Blazor.Shared.Extensions;
 
 namespace RebacExperiments.Blazor.Pages
 {
@@ -85,7 +86,7 @@ namespace RebacExperiments.Blazor.Pages
         {
             var httpRequestMessage = new HttpRequestMessageBuilder("UserTasks", HttpMethod.Get);
 
-            
+            ODataService.GetEntitiesAsync<UserTask>("",)
 
             var query = Container.UserTasks
                 .Page(pageNumber + 1, pageSize)

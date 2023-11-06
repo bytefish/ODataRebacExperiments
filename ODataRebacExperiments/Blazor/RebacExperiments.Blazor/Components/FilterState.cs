@@ -1,9 +1,9 @@
 ﻿// Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using RebacExperiments.Blazor.Infrastructure;
 using RebacExperiments.Blazor.Shared.Models;
 using Microsoft.Fast.Components.FluentUI;
 using System.Collections.Concurrent;
+using RebacExperiments.Blazor.Infrastructure;
 
 namespace RebacExperiments.Blazor.Components
 {
