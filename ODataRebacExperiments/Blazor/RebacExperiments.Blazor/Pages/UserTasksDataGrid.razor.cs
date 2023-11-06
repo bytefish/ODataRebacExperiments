@@ -9,6 +9,8 @@ using RebacExperiments.Shared.Models;
 using RebacExperiments.Blazor.Shared.Http;
 using RebacExperiments.Blazor.Infrastructure;
 using RebacExperiments.Blazor.Shared.Extensions;
+using System.ComponentModel;
+using System.Threading;
 
 namespace RebacExperiments.Blazor.Pages
 {
@@ -72,27 +74,28 @@ namespace RebacExperiments.Blazor.Pages
 
         private async Task<QueryOperationResponse<UserTask>> GetUserTasks(GridItemsProviderRequest<UserTask> request)
         {
-            var sorts = DataGridUtils.GetSortColumns(request);
+            
+            // Extract all Sort Columns
+            var sortColumns = DataGridUtils.GetSortColumns(request);
+
+            // Extract all Grid Filters
             var filters = FilterState.Filters.Values.ToList();
 
-            var dataServiceQuery = GetDataServiceQuery(sorts, filters, Pagination.CurrentPageIndex, Pagination.ItemsPerPage);
+            var parameters = new ODataQueryParametersBuilder()
+                .Page(Pagination.CurrentPageIndex + 1, Pagination.ItemsPerPage)
+                .Filter(filters)
+                .OrderBy(sortColumns)
+                .Build();
 
-            var result = await dataServiceQuery.ExecuteAsync(request.CancellationToken);
+            // Get the Data:
+            var entities = await ODataService.GetEntitiesAsync<UserTask>("", parameters, default);
 
-            return (QueryOperationResponse<UserTask>)result;
+
         }
 
         private DataServiceQuery<UserTask> GetDataServiceQuery(List<SortColumn> sortColumns, List<FilterDescriptor> filters,  int pageNumber, int pageSize)
         {
             var httpRequestMessage = new HttpRequestMessageBuilder("UserTasks", HttpMethod.Get);
-
-            ODataService.GetEntitiesAsync<UserTask>("",)
-
-            var query = Container.UserTasks
-                .Page(pageNumber + 1, pageSize)
-                .Filter(filters)
-                .SortBy(sortColumns)
-                .IncludeCount(true);
 
             return (DataServiceQuery<UserTask>)query;
         }

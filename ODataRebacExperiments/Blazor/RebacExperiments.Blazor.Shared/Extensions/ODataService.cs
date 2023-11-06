@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
 using RebacExperiments.Blazor.Shared.Http;
 using RebacExperiments.Blazor.Shared.Logging;
+using System.Globalization;
 using System.Net.Http;
 using System.Text;
 using System.Text.Json;
@@ -22,14 +23,19 @@ namespace RebacExperiments.Blazor.Shared.Extensions
             _parser = parser;
         }
 
-        public async Task<ODataEntityResponse<TEntityType>> GetEntityAsync<TEntityType>(string url, CancellationToken cancellationToken)
+        public async Task<ODataEntityResponse<TEntityType>> GetEntityAsync<TEntityType>(string url, ODataQueryParameters parameters, CancellationToken cancellationToken)
         {
             _logger.TraceMethodEntry();
 
+            // Create the HttpRequestMessageBuilder for the Request
+            var httpRequestMessageBuilder = new HttpRequestMessageBuilder(url, HttpMethod.Get)
+                .SetHeader("Content-Type", "application/json;odata.metadata=minimal;odata.streaming=true;IEEE754Compatible=false;");
+
+            // Apply OData Parameters
+            ApplyODataParameters(httpRequestMessageBuilder, parameters);
+
             // Builds the GET Request Message
-            var httpRequestMessage = new HttpRequestMessageBuilder(url, HttpMethod.Get)
-                .SetHeader("Content-Type", "application/json;odata.metadata=minimal;odata.streaming=true;IEEE754Compatible=false;")
-                .Build();
+            var httpRequestMessage = httpRequestMessageBuilder.Build();
 
             // Sends the HttpRequestMessage to the OData Service
             var httpResponseMessage = await _httpClient
@@ -43,14 +49,19 @@ namespace RebacExperiments.Blazor.Shared.Extensions
             return response;
         }
 
-        public async Task<ODataEntitiesResponse<TEntityType>> GetEntitiesAsync<TEntityType>(string url, CancellationToken cancellationToken)
+        public async Task<ODataEntitiesResponse<TEntityType>> GetEntitiesAsync<TEntityType>(string url, ODataQueryParameters parameters, CancellationToken cancellationToken)
         {
             _logger.TraceMethodEntry();
 
+            // Create the HttpRequestMessageBuilder for the Request
+            var httpRequestMessageBuilder = new HttpRequestMessageBuilder(url, HttpMethod.Get)
+                .SetHeader("Content-Type", "application/json;odata.metadata=minimal;odata.streaming=true;IEEE754Compatible=false;");
+
+            // Apply OData Parameters
+            ApplyODataParameters(httpRequestMessageBuilder, parameters);
+
             // Builds the GET Request Message
-            var httpRequestMessage = new HttpRequestMessageBuilder(url, HttpMethod.Get)
-                .SetHeader("Content-Type", "application/json;odata.metadata=minimal;odata.streaming=true;IEEE754Compatible=false;")
-                .Build();
+            var httpRequestMessage = httpRequestMessageBuilder.Build();
 
             // Sends the HttpRequestMessage to the OData Service
             var httpResponseMessage = await _httpClient
@@ -137,5 +148,27 @@ namespace RebacExperiments.Blazor.Shared.Extensions
 
             return response;
         }
+
+        private void ApplyODataParameters(HttpRequestMessageBuilder httpRequestMessageBuilder, ODataQueryParameters parameters)
+        {
+            if(parameters.Skip != null)
+            {
+                httpRequestMessageBuilder.SetQueryString("$skip", parameters.Skip.ToString()!);
+            }
+
+            if (parameters.Top != null)
+            {
+                httpRequestMessageBuilder.SetQueryString("$top", parameters.Top.ToString()!);
+            }
+
+            if (parameters.Filter != null)
+            {
+                httpRequestMessageBuilder.SetQueryString("$filter", parameters.Filter);
+            }
+            if (parameters.OrderBy != null)
+            {
+                httpRequestMessageBuilder.SetQueryString("$orderby", parameters.OrderBy);
+            }
+        } 
     }
 }
