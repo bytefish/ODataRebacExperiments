@@ -1,15 +1,11 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using Azure;
 using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Cors.Infrastructure;
 using Microsoft.AspNetCore.Diagnostics;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OData;
 using Microsoft.AspNetCore.OData.Batch;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Options;
 using Microsoft.OData;
 using RebacExperiments.Server.Api.Infrastructure.Authentication;
 using RebacExperiments.Server.Api.Infrastructure.Constants;
@@ -21,12 +17,8 @@ using RebacExperiments.Server.Api.Infrastructure.Swagger;
 using RebacExperiments.Server.Api.Services;
 using Serilog;
 using Serilog.Sinks.SystemConsole.Themes;
-using System.Reflection.Metadata;
-using System.Reflection.PortableExecutable;
 using System.Security.Claims;
-using System.Text.Json;
 using System.Threading.RateLimiting;
-using static System.Net.Mime.MediaTypeNames;
 
 // We will log to %LocalAppData%/RebacExperiments to store the Logs, so it doesn't need to be configured 
 // to a different path, when you run it on your machine.
