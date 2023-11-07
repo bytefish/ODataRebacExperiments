@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.OData;
 using Microsoft.AspNetCore.OData.Batch;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using RebacExperiments.Server.Api.Infrastructure.Authentication;
 using RebacExperiments.Server.Api.Infrastructure.Constants;
 using RebacExperiments.Server.Api.Infrastructure.Database;
@@ -62,7 +63,21 @@ try
     });
 
     // CORS
-    builder.Services.AddCors();
+    builder.Services.AddCors(options =>
+    {
+        var allowedOrigins = builder.Configuration["AllowedOrigins"];
+
+        if (allowedOrigins == null)
+        {
+            throw new InvalidOperationException("AllowedOrigins is missing in the appsettings.json");
+        }
+
+        options.AddPolicy("CorsPolicy", builder => builder
+            .WithOrigins(allowedOrigins)
+            .AllowAnyHeader()
+            .AllowAnyMethod()
+            .AllowCredentials());
+    });
 
     // Add Error Handler
     builder.Services.Configure<ApplicationErrorHandlerOptions>(o =>
@@ -144,13 +159,12 @@ try
 
     var app = builder.Build();
 
+    // The CorsPolicy must be
+    app.UseCors("CorsPolicy");
+
     // Configure the HTTP request pipeline.
     app.UseHttpsRedirection();
 
-    app.UseCors(x => x
-        .AllowAnyOrigin()
-        .AllowAnyHeader()
-        .AllowAnyMethod());
 
     if (app.Environment.IsDevelopment() || app.Environment.IsStaging())
     {
@@ -161,8 +175,7 @@ try
             options.SwaggerEndpoint("https://localhost:5000/odata/$openapi", "WideWorldImporters API");
         });
     }
-
-
+    
     app.UseAuthorization();
 
     app.MapControllers();
