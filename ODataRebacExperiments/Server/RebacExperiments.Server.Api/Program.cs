@@ -1,10 +1,13 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using Azure;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Cors.Infrastructure;
 using Microsoft.AspNetCore.OData;
 using Microsoft.AspNetCore.OData.Batch;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
+using Microsoft.OData;
 using RebacExperiments.Server.Api.Infrastructure.Authentication;
 using RebacExperiments.Server.Api.Infrastructure.Constants;
 using RebacExperiments.Server.Api.Infrastructure.Database;
@@ -14,7 +17,10 @@ using RebacExperiments.Server.Api.Infrastructure.Swagger;
 using RebacExperiments.Server.Api.Services;
 using Serilog;
 using Serilog.Sinks.SystemConsole.Themes;
+using System.Reflection.Metadata;
+using System.Reflection.PortableExecutable;
 using System.Security.Claims;
+using System.Text.Json;
 using System.Threading.RateLimiting;
 
 // We will log to %LocalAppData%/RebacExperiments to store the Logs, so it doesn't need to be configured 
@@ -65,7 +71,9 @@ try
     // CORS
     builder.Services.AddCors(options =>
     {
-        var allowedOrigins = builder.Configuration["AllowedOrigins"];
+        var allowedOrigins = builder.Configuration
+            .GetSection("AllowedOrigins")
+            .Get<string[]>();
 
         if (allowedOrigins == null)
         {
@@ -102,11 +110,23 @@ try
                 return Task.CompletedTask;
             };
 
-            options.Events.OnRedirectToLogin = (context) =>
+            options.Events.OnRedirectToLogin = async (context) =>
             {
                 context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+                context.Response.ContentType = "application/json; charset=UTF-8";
 
-                return Task.CompletedTask;
+                var error = new ODataError
+                {
+                    ErrorCode = StatusCodes.Status401Unauthorized.ToString(),
+                    Message = "Unauthorized Access"
+                };
+
+                var json = JsonSerializer.Serialize(error, new JsonSerializerOptions
+                {
+                    PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+                });
+
+                await context.Response.WriteAsync(json);
             };
         });
 
@@ -159,13 +179,6 @@ try
 
     var app = builder.Build();
 
-    // The CorsPolicy must be
-    app.UseCors("CorsPolicy");
-
-    // Configure the HTTP request pipeline.
-    app.UseHttpsRedirection();
-
-
     if (app.Environment.IsDevelopment() || app.Environment.IsStaging())
     {
         app.UseSwagger();
@@ -175,7 +188,10 @@ try
             options.SwaggerEndpoint("https://localhost:5000/odata/$openapi", "WideWorldImporters API");
         });
     }
-    
+
+
+    app.UseCors("CorsPolicy");
+
     app.UseAuthorization();
 
     app.MapControllers();
