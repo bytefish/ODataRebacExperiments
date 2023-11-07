@@ -184,10 +184,13 @@ try
             {
                 // This isn't nice, because we probably shouldn't work with MVC types here. It would be better 
                 // to rewrite the ApplicationErrorHandler to working with the HttpResponse.
-                await odataErrorHandler.HandleException(context, exception).ExecuteResultAsync(new ActionContext
-                {
-                    HttpContext = context,
-                }).ConfigureAwait(false);
+                var actionContext = new ActionContext { HttpContext = context };
+
+                var actionResult = odataErrorHandler.HandleException(context, exception);
+
+                await actionResult
+                    .ExecuteResultAsync(actionContext)
+                    .ConfigureAwait(false);
             }
         });
     });
