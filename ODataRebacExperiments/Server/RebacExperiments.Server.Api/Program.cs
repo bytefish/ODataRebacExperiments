@@ -3,6 +3,9 @@
 using Azure;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Cors.Infrastructure;
+using Microsoft.AspNetCore.Diagnostics;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OData;
 using Microsoft.AspNetCore.OData.Batch;
 using Microsoft.EntityFrameworkCore;
@@ -12,6 +15,7 @@ using RebacExperiments.Server.Api.Infrastructure.Authentication;
 using RebacExperiments.Server.Api.Infrastructure.Constants;
 using RebacExperiments.Server.Api.Infrastructure.Database;
 using RebacExperiments.Server.Api.Infrastructure.Errors;
+using RebacExperiments.Server.Api.Infrastructure.Exceptions;
 using RebacExperiments.Server.Api.Infrastructure.OData;
 using RebacExperiments.Server.Api.Infrastructure.Swagger;
 using RebacExperiments.Server.Api.Services;
@@ -22,6 +26,7 @@ using System.Reflection.PortableExecutable;
 using System.Security.Claims;
 using System.Text.Json;
 using System.Threading.RateLimiting;
+using static System.Net.Mime.MediaTypeNames;
 
 // We will log to %LocalAppData%/RebacExperiments to store the Logs, so it doesn't need to be configured 
 // to a different path, when you run it on your machine.
@@ -103,31 +108,8 @@ try
             options.Cookie.HttpOnly = true;
             options.Cookie.SameSite = SameSiteMode.Lax; // We don't want to deal with CSRF Tokens
 
-            options.Events.OnRedirectToAccessDenied = (context) =>
-            {
-                context.Response.StatusCode = StatusCodes.Status403Forbidden;
-
-                return Task.CompletedTask;
-            };
-
-            options.Events.OnRedirectToLogin = async (context) =>
-            {
-                context.Response.StatusCode = StatusCodes.Status401Unauthorized;
-                context.Response.ContentType = "application/json; charset=UTF-8";
-
-                var error = new ODataError
-                {
-                    ErrorCode = StatusCodes.Status401Unauthorized.ToString(),
-                    Message = "Unauthorized Access"
-                };
-
-                var json = JsonSerializer.Serialize(error, new JsonSerializerOptions
-                {
-                    PropertyNamingPolicy = JsonNamingPolicy.CamelCase
-                });
-
-                await context.Response.WriteAsync(json);
-            };
+            options.Events.OnRedirectToAccessDenied = (context) => throw new AuthenticationFailedException(); // Handle this in the middleware ...
+            options.Events.OnRedirectToLogin = (context) => throw new AuthenticationFailedException(); // Handle this in the middleware ...
         });
 
     builder.Services
@@ -179,6 +161,37 @@ try
 
     var app = builder.Build();
 
+    // We want all Exceptions to return an ODataError in the Response. So all Exceptions should be handled and run through
+    // this ExceptionHandler. This should only happen for things deep down in the ASP.NET Core stack, such as not resolving
+    // routes.
+    // 
+    // Anything else should run through the Controllers and the Error Handlers are going to work there.
+    //
+    app.UseExceptionHandler(options =>
+    {
+        options.Run(async context =>
+        {
+            // Get the ExceptionHandlerFeature
+            var exceptionHandlerFeature = context.Features.Get<IExceptionHandlerFeature>();
+            
+            // Required for writing the ODataErrors
+            var odataErrorHandler = context.RequestServices.GetRequiredService<ApplicationErrorHandler>();
+
+            // Get the underlying Exception
+            var exception = exceptionHandlerFeature?.Error;
+
+            if (exception != null)
+            {
+                // This isn't nice, because we probably shouldn't work with MVC types here. It would be better 
+                // to rewrite the ApplicationErrorHandler to working with the HttpResponse.
+                await odataErrorHandler.HandleException(context, exception).ExecuteResultAsync(new ActionContext
+                {
+                    HttpContext = context,
+                }).ConfigureAwait(false);
+            }
+        });
+    });
+
     if (app.Environment.IsDevelopment() || app.Environment.IsStaging())
     {
         app.UseSwagger();
@@ -188,7 +201,6 @@ try
             options.SwaggerEndpoint("https://localhost:5000/odata/$openapi", "WideWorldImporters API");
         });
     }
-
 
     app.UseCors("CorsPolicy");
 
