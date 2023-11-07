@@ -2,6 +2,7 @@
 
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Diagnostics;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OData;
 using Microsoft.AspNetCore.OData.Batch;
@@ -163,27 +164,24 @@ try
     {
         options.Run(async context =>
         {
-            // Get the ExceptionHandlerFeature
-            var exceptionHandlerFeature = context.Features.Get<IExceptionHandlerFeature>();
+            // Get the ExceptionHandlerFeature, so we get access to the original Exception
+            var exceptionHandlerFeature = context.Features.GetRequiredFeature<IExceptionHandlerFeature>();
             
-            // Required for writing the ODataErrors
+            // The ODataErrorHandler is required for adding an ODataError to all failed HTTP responses
             var odataErrorHandler = context.RequestServices.GetRequiredService<ApplicationErrorHandler>();
 
-            // Get the underlying Exception
-            var exception = exceptionHandlerFeature?.Error;
+            // We can get the underlying Exception from the ExceptionHandlerFeature
+            var exception = exceptionHandlerFeature.Error;
 
-            if (exception != null)
-            {
-                // This isn't nice, because we probably shouldn't work with MVC types here. It would be better 
-                // to rewrite the ApplicationErrorHandler to working with the HttpResponse.
-                var actionContext = new ActionContext { HttpContext = context };
+            // This isn't nice, because we probably shouldn't work with MVC types here. It would be better 
+            // to rewrite the ApplicationErrorHandler to working with the HttpResponse.
+            var actionContext = new ActionContext { HttpContext = context };
 
-                var actionResult = odataErrorHandler.HandleException(context, exception);
+            var actionResult = odataErrorHandler.HandleException(context, exception);
 
-                await actionResult
-                    .ExecuteResultAsync(actionContext)
-                    .ConfigureAwait(false);
-            }
+            await actionResult
+                .ExecuteResultAsync(actionContext)
+                .ConfigureAwait(false);
         });
     });
 
