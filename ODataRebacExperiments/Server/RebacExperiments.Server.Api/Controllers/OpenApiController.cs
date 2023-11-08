@@ -7,7 +7,6 @@ using RebacExperiments.Server.Api.Infrastructure.Errors;
 using RebacExperiments.Server.Api.Infrastructure.OData;
 using Microsoft.OpenApi.Extensions;
 using Microsoft.OData.Edm;
-using Microsoft.OpenApi.Models;
 
 namespace RebacExperiments.Server.Api.Controllers
 {
@@ -27,7 +26,7 @@ namespace RebacExperiments.Server.Api.Controllers
         }
 
         [HttpGet("odata/openapi.json")]
-        public IActionResult GetSwaggerDocument()
+        public IActionResult GetOpenApiJson()
         {
             try
             {

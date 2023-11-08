@@ -188,10 +188,9 @@ try
     if (app.Environment.IsDevelopment() || app.Environment.IsStaging())
     {
         app.UseSwagger();
-        app.UseODataOpenApi();
         app.UseSwaggerUI(options =>
         {
-            options.SwaggerEndpoint("https://localhost:5000/odata/$openapi", "WideWorldImporters API");
+            options.SwaggerEndpoint("https://localhost:5000/odata/openapi.json", "TaskManagement Service");
         });
     }
 
