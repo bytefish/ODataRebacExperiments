@@ -1,0 +1,1 @@
+kiota generate --openapi https://localhost:5000/odata/openapi.json --language csharp --log-level Trace --output ../src/Shared/RebacExperiments.Shared.ApiClient
