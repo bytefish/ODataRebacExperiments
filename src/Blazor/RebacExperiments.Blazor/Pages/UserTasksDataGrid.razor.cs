@@ -114,7 +114,7 @@ namespace RebacExperiments.Blazor.Pages
                 {
                     request.QueryParameters.Orderby = new[] { parameters.OrderBy };
                 }
-            }).ConfigureAwait(false);    
+            });    
         }
     }
 }
