@@ -1,5 +1,4 @@
-﻿using RebacExperiments.Blazor.Shared.Http;
-using RebacExperiments.Blazor.Shared.Models;
+﻿using RebacExperiments.Blazor.Shared.Models;
 
 namespace RebacExperiments.Blazor.Shared.Extensions
 {
@@ -8,12 +7,12 @@ namespace RebacExperiments.Blazor.Shared.Extensions
         /// <summary>
         /// Gets or sets the number of elements to skip.
         /// </summary>
-        public long? Skip { get; set; } = null;
+        public int? Skip { get; set; } = null;
 
         /// <summary>
         /// Gets or sets the number of elements to take.
         /// </summary>
-        public long? Top { get; set; } = null;
+        public int? Top { get; set; } = null;
 
         /// <summary>
         /// Gets or sets the filter clause.
@@ -33,8 +32,8 @@ namespace RebacExperiments.Blazor.Shared.Extensions
 
     public class ODataQueryParametersBuilder
     {
-        private long? _skip;
-        private long? _top;
+        private int? _skip;
+        private int? _top;
         private string? _orderby;
         private string? _filter;
 

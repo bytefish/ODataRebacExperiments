@@ -52,6 +52,7 @@
     </ItemGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\..\Shared\RebacExperiments.Shared.ApiSdk\RebacExperiments.Shared.ApiSdk.csproj" />
       <ProjectReference Include="..\RebacExperiments.Blazor.Shared\RebacExperiments.Blazor.Shared.csproj" />
     </ItemGroup>
 

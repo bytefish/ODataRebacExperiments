@@ -8,7 +8,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		.editorconfig = .editorconfig
 	EndProjectSection
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RebacExperiments.Server.Api", "RebacExperiments.Shared.ApiClient\RebacExperiments.Shared.ApiClient.csproj", "{15000D0A-F6B6-4889-B875-BA113E281C4E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RebacExperiments.Shared.ApiSdk", "RebacExperiments.Shared.ApiSdk\RebacExperiments.Shared.ApiSdk.csproj", "{15000D0A-F6B6-4889-B875-BA113E281C4E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

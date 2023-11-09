@@ -3,9 +3,10 @@
 using RebacExperiments.Blazor.Components;
 using Microsoft.AspNetCore.Components;
 using Microsoft.Fast.Components.FluentUI;
-using RebacExperiments.Shared.Models;
 using RebacExperiments.Blazor.Infrastructure;
 using RebacExperiments.Blazor.Shared.Extensions;
+using RebacExperiments.Shared.ApiSdk.Models;
+using RebacExperiments.Blazor.Extensions;
 
 namespace RebacExperiments.Blazor.Pages
 {
@@ -47,11 +48,28 @@ namespace RebacExperiments.Blazor.Pages
             {
                 var response = await GetUserTasks(request);
 
-                return GridItemsProviderResult.From(items: response.Entities, totalItemCount: (int)response.Count());
+                if(response == null)
+                {
+                    return GridItemsProviderResult.From(items: new List<UserTask>(), totalItemCount: 0);
+                }
+
+                var entities = response.Value;
+
+                if (entities == null)
+                {
+                    return GridItemsProviderResult.From(items: new List<UserTask>(), totalItemCount: 0);
+                }
+
+                int count = response.GetODataCount();
+
+                return GridItemsProviderResult.From(items: entities, totalItemCount: count);
             };
             
             return base.OnInitializedAsync();
         }
+
+        private static 
+
 
         /// <inheritdoc />
         protected override Task OnParametersSetAsync()
@@ -67,7 +85,7 @@ namespace RebacExperiments.Blazor.Pages
             return DataGrid.RefreshDataAsync();
         }
 
-        private async Task<ODataEntitiesResponse<UserTask>> GetUserTasks(GridItemsProviderRequest<UserTask> request)
+        private async Task<UserTaskCollectionResponse?> GetUserTasks(GridItemsProviderRequest<UserTask> request)
         {
             
             // Extract all Sort Columns
@@ -83,10 +101,18 @@ namespace RebacExperiments.Blazor.Pages
                 .Build();
 
             // Get the Data:
-            var response = await ODataService.GetEntitiesAsync<UserTask>("UserTasks", parameters, default);
 
-            return response;
-            
+            return await ApiClient.Odata.UserTasks.GetAsync(request =>
+            {
+                request.QueryParameters.Count = true;
+                request.QueryParameters.Filter = parameters.Filter;
+                request.QueryParameters.Top = parameters.Top;
+                request.QueryParameters.Skip = parameters.Skip;
+                if (parameters.OrderBy != null)
+                {
+                    request.QueryParameters.Orderby = new[] { parameters.OrderBy };
+                }
+            }).ConfigureAwait(false);    
         }
 
     }

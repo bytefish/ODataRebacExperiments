@@ -7,27 +7,19 @@ using Microsoft.Fast.Components.FluentUI;
 using RebacExperiments.Blazor.Shared.Extensions;
 using RebacExperiments.Blazor.Infrastructure;
 using System.Text.Json;
+using RebacExperiments.Shared.ApiSdk;
+using Microsoft.Kiota.Http.HttpClientLibrary;
+using Microsoft.Kiota.Abstractions.Authentication;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
 builder.RootComponents.Add<HeadOutlet>("head::after");
 
-builder.Services.AddScoped<JsonSerializerOptions>(sp =>
-{
-    return new JsonSerializerOptions
-    {
-        PropertyNameCaseInsensitive = true
-    };
-});
-
 builder.Services.AddScoped<CookieHandler>();
 
 builder.Services
-    .AddHttpClient<ODataService>(client => client.BaseAddress = new Uri("https://localhost:5000/odata/"))
+    .AddHttpClient<ApiClient>(client => client.BaseAddress = new Uri("https://localhost:5000/odata/"))
     .AddHttpMessageHandler<CookieHandler>();
-
-builder.Services.AddScoped<ODataResponseParser>();
-builder.Services.AddScoped<ODataService>();
 
 builder.Services.AddLocalization();
 
