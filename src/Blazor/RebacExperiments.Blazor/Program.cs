@@ -1,12 +1,10 @@
-
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
 using RebacExperiments.Blazor;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Microsoft.Fast.Components.FluentUI;
-using RebacExperiments.Blazor.Shared.Extensions;
 using RebacExperiments.Blazor.Infrastructure;
-using System.Text.Json;
 using RebacExperiments.Shared.ApiSdk;
 using Microsoft.Kiota.Http.HttpClientLibrary;
 using Microsoft.Kiota.Abstractions.Authentication;
@@ -16,8 +14,10 @@ var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
 builder.RootComponents.Add<HeadOutlet>("head::after");
 
+// We need the CookieHandler to send the Authentication Cookie to the Server.
 builder.Services.AddScoped<CookieHandler>();
 
+// Add the Kiota Client.
 builder.Services.AddScoped<IAuthenticationProvider, AnonymousAuthenticationProvider>();
 
 builder.Services
@@ -26,6 +26,7 @@ builder.Services
 
 builder.Services.AddScoped<ApiClient>();
 
+// Localization
 builder.Services.AddLocalization();
 
 builder.Services.AddFluentUIComponents(options =>

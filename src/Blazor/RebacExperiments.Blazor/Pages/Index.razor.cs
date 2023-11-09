@@ -1,4 +1,6 @@
-﻿using RebacExperiments.Shared.ApiSdk.Odata.SignInUser;
+﻿// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+using RebacExperiments.Shared.ApiSdk.Odata.SignInUser;
 
 namespace RebacExperiments.Blazor.Pages
 {

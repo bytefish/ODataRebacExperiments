@@ -1,6 +1,6 @@
-﻿using RebacExperiments.Blazor.Shared.Models;
+﻿using RebacExperiments.Blazor.Shared.Extensions;
 
-namespace RebacExperiments.Blazor.Shared.Extensions
+namespace RebacExperiments.Blazor.Shared.Models
 {
     public class ODataQueryParameters
     {
@@ -38,17 +38,17 @@ namespace RebacExperiments.Blazor.Shared.Extensions
         private string? _filter;
 
         public ODataQueryParametersBuilder Page(int pageNumber, int pageSize)
-        { 
+        {
             _skip = (pageNumber - 1) * pageSize;
             _top = pageSize;
-       
+
             return this;
         }
 
         public ODataQueryParametersBuilder Filter(List<FilterDescriptor> filterDescriptors)
         {
             _filter = ODataUtils.Translate(filterDescriptors);
-            
+
             return this;
         }
 

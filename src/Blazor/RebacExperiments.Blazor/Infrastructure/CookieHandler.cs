@@ -1,4 +1,5 @@
-﻿
+﻿// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
 using Microsoft.AspNetCore.Components.WebAssembly.Http;
 
 namespace RebacExperiments.Blazor.Infrastructure

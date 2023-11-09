@@ -4,9 +4,9 @@ using RebacExperiments.Blazor.Components;
 using Microsoft.AspNetCore.Components;
 using Microsoft.Fast.Components.FluentUI;
 using RebacExperiments.Blazor.Infrastructure;
-using RebacExperiments.Blazor.Shared.Extensions;
 using RebacExperiments.Shared.ApiSdk.Models;
 using RebacExperiments.Blazor.Extensions;
+using RebacExperiments.Blazor.Shared.Models;
 
 namespace RebacExperiments.Blazor.Pages
 {
@@ -85,7 +85,6 @@ namespace RebacExperiments.Blazor.Pages
 
         private async Task<UserTaskCollectionResponse?> GetUserTasks(GridItemsProviderRequest<UserTask> request)
         {
-            
             // Extract all Sort Columns
             var sortColumns = DataGridUtils.GetSortColumns(request);
 
@@ -117,6 +116,5 @@ namespace RebacExperiments.Blazor.Pages
                 }
             }).ConfigureAwait(false);    
         }
-
     }
 }
