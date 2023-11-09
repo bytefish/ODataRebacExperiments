@@ -85,20 +85,20 @@ namespace RebacExperiments.Blazor.Pages
 
         private async Task<UserTaskCollectionResponse?> GetUserTasks(GridItemsProviderRequest<UserTask> request)
         {
-            // Extract all Sort Columns
+            // Extract all Sort Columns from the Blazor FluentUI DataGrid
             var sortColumns = DataGridUtils.GetSortColumns(request);
 
-            // Extract all Grid Filters
+            // Extract all Filters from the Blazor FluentUI DataGrid
             var filters = FilterState.Filters.Values.ToList();
 
-            var parameters = new ODataQueryParametersBuilder()
+            // Build the ODataQueryParameters using the ODataQueryParametersBuilder
+            var parameters = ODataQueryParameters.Builder
                 .Page(Pagination.CurrentPageIndex + 1, Pagination.ItemsPerPage)
                 .Filter(filters)
                 .OrderBy(sortColumns)
                 .Build();
 
-            // Get the Data:
-
+            // Get the Data using the ApiClient from the SDK
             return await ApiClient.Odata.UserTasks.GetAsync(request =>
             {
                 request.QueryParameters.Count = true;
