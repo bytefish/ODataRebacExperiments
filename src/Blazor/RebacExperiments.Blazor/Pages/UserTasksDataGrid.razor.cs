@@ -68,8 +68,6 @@ namespace RebacExperiments.Blazor.Pages
             return base.OnInitializedAsync();
         }
 
-        private static 
-
 
         /// <inheritdoc />
         protected override Task OnParametersSetAsync()
@@ -105,10 +103,15 @@ namespace RebacExperiments.Blazor.Pages
             return await ApiClient.Odata.UserTasks.GetAsync(request =>
             {
                 request.QueryParameters.Count = true;
-                request.QueryParameters.Filter = parameters.Filter;
                 request.QueryParameters.Top = parameters.Top;
                 request.QueryParameters.Skip = parameters.Skip;
-                if (parameters.OrderBy != null)
+
+                if(!string.IsNullOrWhiteSpace(parameters.Filter))
+                {
+                    request.QueryParameters.Filter = parameters.Filter;
+                }
+
+                if (!string.IsNullOrWhiteSpace(parameters.OrderBy))
                 {
                     request.QueryParameters.Orderby = new[] { parameters.OrderBy };
                 }

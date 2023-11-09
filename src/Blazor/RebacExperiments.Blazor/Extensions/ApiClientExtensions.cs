@@ -47,7 +47,7 @@ namespace RebacExperiments.Blazor.Extensions
 
             try
             {
-                count = (int)value;
+                count = Convert.ToInt32(value);
             } 
             catch
             {

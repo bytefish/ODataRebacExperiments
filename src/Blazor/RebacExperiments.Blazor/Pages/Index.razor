@@ -1,4 +1,8 @@
-﻿@page "/"
+﻿@using RebacExperiments.Shared.ApiSdk;
+
+@page "/"
+
+@inject ApiClient ApiClient
 
 <PageTitle>Index</PageTitle>
 
@@ -7,3 +11,7 @@
 <p style="margin-bottom: 1rem;">
     Welcome to your new app.
 </p>
+
+<button @onclick="SignInUser_Philipp">Sign In as "philipp@bytefish.de"</button>
+<button @onclick="SignInUser_Max">Sign In as "max@mustermann.local"</button>
+<button @onclick="SignOutUser">Sign Out</button>

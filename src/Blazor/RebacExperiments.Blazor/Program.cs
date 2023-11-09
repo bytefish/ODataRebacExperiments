@@ -10,6 +10,7 @@ using System.Text.Json;
 using RebacExperiments.Shared.ApiSdk;
 using Microsoft.Kiota.Http.HttpClientLibrary;
 using Microsoft.Kiota.Abstractions.Authentication;
+using Microsoft.Kiota.Abstractions;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
@@ -17,9 +18,13 @@ builder.RootComponents.Add<HeadOutlet>("head::after");
 
 builder.Services.AddScoped<CookieHandler>();
 
+builder.Services.AddScoped<IAuthenticationProvider, AnonymousAuthenticationProvider>();
+
 builder.Services
-    .AddHttpClient<ApiClient>(client => client.BaseAddress = new Uri("https://localhost:5000/odata/"))
+    .AddHttpClient<IRequestAdapter, HttpClientRequestAdapter>(client => client.BaseAddress = new Uri("https://localhost:5000"))
     .AddHttpMessageHandler<CookieHandler>();
+
+builder.Services.AddScoped<ApiClient>();
 
 builder.Services.AddLocalization();
 
