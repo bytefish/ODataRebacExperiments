@@ -6,7 +6,6 @@ MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{31208B26-D595-4E56-9281-91002D1CF01C}"
 	ProjectSection(SolutionItems) = preProject
 		.editorconfig = .editorconfig
-		scripts\generate_api_client.ps1 = scripts\generate_api_client.ps1
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Server", "Server", "{5C098822-FA3F-4FBD-BEF5-0255A7444E7E}"
