@@ -11,17 +11,17 @@ using RebacExperiments.Blazor.Shared.OData;
 
 namespace RebacExperiments.Blazor.Pages
 {
-    public partial class UserTasksDataGrid
+    public partial class RelationTuplesDataGrid
     {
         /// <summary>
         /// Provides the Data Items.
         /// </summary>
-        private GridItemsProvider<UserTask> UserTasksProvider = default!;
+        private GridItemsProvider<RelationTuple> RelationTuplesProvider = default!;
 
         /// <summary>
         /// DataGrid.
         /// </summary>
-        private FluentDataGrid<UserTask> DataGrid = default!;
+        private FluentDataGrid<RelationTuple> DataGrid = default!;
 
         /// <summary>
         /// The current Pagination State.
@@ -38,27 +38,27 @@ namespace RebacExperiments.Blazor.Pages
         /// </summary>
         private readonly EventCallbackSubscriber<FilterState> CurrentFiltersChanged;
 
-        public UserTasksDataGrid()
+        public RelationTuplesDataGrid()
         {
             CurrentFiltersChanged = new(EventCallback.Factory.Create<FilterState>(this, RefreshData));
         }
 
         protected override Task OnInitializedAsync()
         {
-            UserTasksProvider = async request =>
+            RelationTuplesProvider = async request =>
             {
-                var response = await GetUserTasks(request);
+                var response = await GetRelationTuples(request);
 
                 if(response == null)
                 {
-                    return GridItemsProviderResult.From(items: new List<UserTask>(), totalItemCount: 0);
+                    return GridItemsProviderResult.From(items: new List<RelationTuple>(), totalItemCount: 0);
                 }
 
                 var entities = response.Value;
 
                 if (entities == null)
                 {
-                    return GridItemsProviderResult.From(items: new List<UserTask>(), totalItemCount: 0);
+                    return GridItemsProviderResult.From(items: new List<RelationTuple>(), totalItemCount: 0);
                 }
 
                 int count = response.GetODataCount();
@@ -84,7 +84,7 @@ namespace RebacExperiments.Blazor.Pages
             return DataGrid.RefreshDataAsync();
         }
 
-        private async Task<UserTaskCollectionResponse?> GetUserTasks(GridItemsProviderRequest<UserTask> request)
+        private async Task<RelationTupleCollectionResponse?> GetRelationTuples(GridItemsProviderRequest<RelationTuple> request)
         {
             // Extract all Sort Columns from the Blazor FluentUI DataGrid
             var sortColumns = DataGridUtils.GetSortColumns(request);
@@ -100,7 +100,7 @@ namespace RebacExperiments.Blazor.Pages
                 .Build();
 
             // Get the Data using the ApiClient from the SDK
-            return await ApiClient.Odata.UserTasks.GetAsync(request =>
+            return await ApiClient.Odata.RelationTuples.GetAsync(request =>
             {
                 request.QueryParameters.Count = true;
                 request.QueryParameters.Top = parameters.Top;

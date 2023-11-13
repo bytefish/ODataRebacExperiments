@@ -15,12 +15,10 @@ namespace RebacExperiments.Server.Api.Infrastructure.OData
             modelBuilder.Namespace = "TaskManagementService";
 
             modelBuilder.EntitySet<UserTask>("UserTasks");
-            
-            modelBuilder.EnumType<UserTaskStatusEnum>()
-                .RemoveMember(UserTaskStatusEnum.None);
+            modelBuilder.EntitySet<RelationTuple>("RelationTuples");
 
-            modelBuilder.EnumType<UserTaskPriorityEnum>()
-                .RemoveMember(UserTaskPriorityEnum.None);
+            modelBuilder.EnumType<UserTaskStatusEnum>().RemoveMember(UserTaskStatusEnum.None);
+            modelBuilder.EnumType<UserTaskPriorityEnum>().RemoveMember(UserTaskPriorityEnum.None);
 
             // Authentication
             RegisterSignInUserAction(modelBuilder);

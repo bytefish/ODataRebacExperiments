@@ -84,5 +84,12 @@ namespace RebacExperiments.Server.Api.Services
 
             return claims;
         }
+
+        public IQueryable<RelationTuple> QueryRelationTuples(ApplicationDbContext context)
+        {
+            _logger.TraceMethodEntry();
+
+            return context.RelationTuples;
+        }
     }
 }

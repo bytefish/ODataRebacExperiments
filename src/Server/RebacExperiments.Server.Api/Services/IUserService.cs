@@ -1,6 +1,7 @@
 ﻿// Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using RebacExperiments.Server.Api.Infrastructure.Database;
+using RebacExperiments.Shared.Models;
 using System.Security.Claims;
 
 namespace RebacExperiments.Server.Api.Services
@@ -19,5 +20,12 @@ namespace RebacExperiments.Server.Api.Services
         /// <param name="cancellationToken">Cancellation Token</param>
         /// <returns>A <see cref="ServiceResult"/> with the associated claims, if successful</returns>
         Task<List<Claim>> GetClaimsAsync(ApplicationDbContext context, string username, string password, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Gets an <see cref="IQueryable{RelationTuple}"/> to filter for.
+        /// </summary>
+        /// <param name="context">ApplicationDbContext</param>
+        /// <returns>An <see cref="IQueryable"/> to query <see cref="RelationTuple"/> for</returns>
+        IQueryable<RelationTuple> QueryRelationTuples(ApplicationDbContext context);
     }
 }
