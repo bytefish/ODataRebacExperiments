@@ -107,7 +107,10 @@ namespace RebacExperiments.Blazor.Shared.OData
         {
             var orderByClause = GetOrderByColumns(new []{ column });
 
-            _orderby.Add(orderByClause);
+            if(string.IsNullOrWhiteSpace(orderByClause))
+            {
+                _orderby.Add(orderByClause);
+            }           
 
             return this;
         }
@@ -119,7 +122,17 @@ namespace RebacExperiments.Blazor.Shared.OData
         /// <returns>The <see cref="ODataQueryParametersBuilder"/> with the $orderby clause set</returns>
         public ODataQueryParametersBuilder AddOrderBy(List<SortColumn> columns)
         {
+            if(columns.Count == 0)
+            {
+                return this;
+            }
+
             var orderbyClause = GetOrderByColumns(columns);
+
+            if(string.IsNullOrWhiteSpace(orderbyClause))
+            {
+                return this;
+            }
 
             _orderby.Add(orderbyClause);
 
