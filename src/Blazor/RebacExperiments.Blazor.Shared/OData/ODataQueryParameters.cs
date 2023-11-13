@@ -1,8 +1,8 @@
 ﻿// Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using RebacExperiments.Blazor.Shared.Extensions;
+using RebacExperiments.Blazor.Shared.Models;
 
-namespace RebacExperiments.Blazor.Shared.Models
+namespace RebacExperiments.Blazor.Shared.OData
 {
     /// <summary>
     /// Holds the values for the OData $skip, $top, $filter and $orderby clauses.
@@ -25,9 +25,14 @@ namespace RebacExperiments.Blazor.Shared.Models
         public string? Filter { get; set; }
 
         /// <summary>
+        /// Gets or sets the expand clause.
+        /// </summary>
+        public string[]? Expand { get; set; }
+
+        /// <summary>
         /// Gets or sets the order by clause.
         /// </summary>
-        public string? OrderBy { get; set; }
+        public string[]? OrderBy { get; set; }
 
         /// <summary>
         /// Gets or sets the option to include the count (default: <see cref="true"/>).
@@ -47,8 +52,9 @@ namespace RebacExperiments.Blazor.Shared.Models
     {
         private int? _skip;
         private int? _top;
-        private string? _orderby;
         private string? _filter;
+        private List<string> _orderby = new();
+        private List<string> _expand = new();
 
         /// <summary>
         /// Sets the $top and $skip clauses using the page information.
@@ -56,7 +62,7 @@ namespace RebacExperiments.Blazor.Shared.Models
         /// <param name="pageNumber">Page number to request</param>
         /// <param name="pageNumber">Page size to request</param>
         /// <returns>The <see cref="ODataQueryParametersBuilder"/> with the $top and $skip clauses set</returns>
-        public ODataQueryParametersBuilder Page(int pageNumber, int pageSize)
+        public ODataQueryParametersBuilder SetPage(int pageNumber, int pageSize)
         {
             _skip = (pageNumber - 1) * pageSize;
             _top = pageSize;
@@ -64,14 +70,30 @@ namespace RebacExperiments.Blazor.Shared.Models
             return this;
         }
 
+
         /// <summary>
         /// Sets the $filter clause.
         /// </summary>
         /// <param name="filterDescriptors">Filter Descriptors to filter for</param>
         /// <returns>The <see cref="ODataQueryParametersBuilder"/> with the $filter clause set</returns>
-        public ODataQueryParametersBuilder Filter(List<FilterDescriptor> filterDescriptors)
+        public ODataQueryParametersBuilder SetFilter(List<FilterDescriptor> filterDescriptors)
         {
             _filter = ODataUtils.Translate(filterDescriptors);
+
+            return this;
+        }
+
+        /// <summary>
+        /// Sets the $expand clause.
+        /// </summary>
+        /// <param name="filterDescriptors">Filter Descriptors to filter for</param>
+        /// <returns>The <see cref="ODataQueryParametersBuilder"/> with the $filter clause set</returns>
+        public ODataQueryParametersBuilder AddExpand(string expand)
+        {
+            if(!_expand.Contains(expand))
+            {
+                _expand.Add(expand);
+            }
 
             return this;
         }
@@ -81,9 +103,25 @@ namespace RebacExperiments.Blazor.Shared.Models
         /// </summary>
         /// <param name="columns">List of Columns to sort by</param>
         /// <returns>The <see cref="ODataQueryParametersBuilder"/> with the $orderby clause set</returns>
-        public ODataQueryParametersBuilder OrderBy(List<SortColumn> columns)
+        public ODataQueryParametersBuilder AddOrderBy(SortColumn column)
         {
-            _orderby = GetOrderByColumns(columns);
+            var orderByClause = GetOrderByColumns(new []{ column });
+
+            _orderby.Add(orderByClause);
+
+            return this;
+        }
+
+        /// <summary>
+        /// Sets the $orderby clause.
+        /// </summary>
+        /// <param name="columns">List of Columns to sort by</param>
+        /// <returns>The <see cref="ODataQueryParametersBuilder"/> with the $orderby clause set</returns>
+        public ODataQueryParametersBuilder AddOrderBy(List<SortColumn> columns)
+        {
+            var orderbyClause = GetOrderByColumns(columns);
+
+            _orderby.Add(orderbyClause);
 
             return this;
         }
@@ -93,7 +131,7 @@ namespace RebacExperiments.Blazor.Shared.Models
         /// </summary>
         /// <param name="columns">Columns to convert into the OData $orderby string</param>
         /// <returns>The $orderby clause from the given columns</returns>
-        private string GetOrderByColumns(List<SortColumn> columns)
+        private string GetOrderByColumns(ICollection<SortColumn> columns)
         {
             var sortColumns = columns
                 // We need a Tag with the OData Path:
@@ -115,12 +153,14 @@ namespace RebacExperiments.Blazor.Shared.Models
         /// <returns><see cref="ODataQueryParameters"/> with the OData clauses applied</returns>
         public ODataQueryParameters Build()
         {
+            
             return new ODataQueryParameters
             {
                 Skip = _skip,
                 Top = _top,
-                OrderBy = _orderby,
                 Filter = _filter,
+                Expand = _expand.Any() ? _expand.ToArray() : null,
+                OrderBy = _orderby.Any() ? _orderby.ToArray() : null,
             };
         }
     }

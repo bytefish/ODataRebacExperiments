@@ -7,6 +7,7 @@ using RebacExperiments.Blazor.Infrastructure;
 using RebacExperiments.Shared.ApiSdk.Models;
 using RebacExperiments.Blazor.Extensions;
 using RebacExperiments.Blazor.Shared.Models;
+using RebacExperiments.Blazor.Shared.OData;
 
 namespace RebacExperiments.Blazor.Pages
 {
@@ -93,9 +94,9 @@ namespace RebacExperiments.Blazor.Pages
 
             // Build the ODataQueryParameters using the ODataQueryParametersBuilder
             var parameters = ODataQueryParameters.Builder
-                .Page(Pagination.CurrentPageIndex + 1, Pagination.ItemsPerPage)
-                .Filter(filters)
-                .OrderBy(sortColumns)
+                .SetPage(Pagination.CurrentPageIndex + 1, Pagination.ItemsPerPage)
+                .SetFilter(filters)
+                .AddOrderBy(sortColumns)
                 .Build();
 
             // Get the Data using the ApiClient from the SDK
@@ -105,15 +106,16 @@ namespace RebacExperiments.Blazor.Pages
                 request.QueryParameters.Top = parameters.Top;
                 request.QueryParameters.Skip = parameters.Skip;
 
-                if(!string.IsNullOrWhiteSpace(parameters.Filter))
+                if (parameters.OrderBy != null)
+                {
+                    request.QueryParameters.Orderby = parameters.OrderBy;
+                }
+
+                if (!string.IsNullOrWhiteSpace(parameters.Filter))
                 {
                     request.QueryParameters.Filter = parameters.Filter;
                 }
 
-                if (!string.IsNullOrWhiteSpace(parameters.OrderBy))
-                {
-                    request.QueryParameters.Orderby = new[] { parameters.OrderBy };
-                }
             });    
         }
     }

@@ -3,20 +3,20 @@
 using RebacExperiments.Blazor.Shared.Models;
 using System.Globalization;
 
-namespace RebacExperiments.Blazor.Shared.Extensions
+namespace RebacExperiments.Blazor.Shared.OData
 {
     public static class ODataUtils
     {
         public static string Translate(List<FilterDescriptor> filterDescriptors)
         {
-            if(filterDescriptors.Count == 0)
+            if (filterDescriptors.Count == 0)
             {
                 return string.Empty;
             }
 
             List<string> filters = new();
 
-            foreach(FilterDescriptor filterDescriptor in filterDescriptors)
+            foreach (FilterDescriptor filterDescriptor in filterDescriptors)
             {
                 if (filterDescriptor.FilterOperator == FilterOperatorEnum.None)
                 {
@@ -39,22 +39,22 @@ namespace RebacExperiments.Blazor.Shared.Extensions
                 case FilterTypeEnum.BooleanFilter:
                     return TranslateBooleanFilter((BooleanFilterDescriptor)filterDescriptor);
                 case FilterTypeEnum.DateFilter:
-                    return TranslateDateFilter((DateFilterDescriptor) filterDescriptor);
+                    return TranslateDateFilter((DateFilterDescriptor)filterDescriptor);
                 case FilterTypeEnum.DateTimeFilter:
-                    return TranslateDateTimeFilter((DateTimeFilterDescriptor) filterDescriptor);
+                    return TranslateDateTimeFilter((DateTimeFilterDescriptor)filterDescriptor);
                 case FilterTypeEnum.StringFilter:
-                    return TranslateStringFilter((StringFilterDescriptor) filterDescriptor);
+                    return TranslateStringFilter((StringFilterDescriptor)filterDescriptor);
                 case FilterTypeEnum.NumericFilter:
-                    return TranslateNumericFilter((NumericFilterDescriptor) filterDescriptor);
+                    return TranslateNumericFilter((NumericFilterDescriptor)filterDescriptor);
                 default:
                     throw new ArgumentException($"Could not translate Filter Type '{filterDescriptor.FilterType}'");
-                
+
             }
         }
 
         private static string TranslateBooleanFilter(BooleanFilterDescriptor filterDescriptor)
         {
-            switch(filterDescriptor.FilterOperator)
+            switch (filterDescriptor.FilterOperator)
             {
                 case FilterOperatorEnum.IsNull:
                     return $"{filterDescriptor.PropertyName} eq null";
@@ -212,7 +212,7 @@ namespace RebacExperiments.Blazor.Shared.Extensions
 
         private static string? ToODataDateTime(DateTimeOffset? dateTimeOffset)
         {
-            if(dateTimeOffset == null)
+            if (dateTimeOffset == null)
             {
                 return null;
             }
