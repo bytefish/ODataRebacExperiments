@@ -1,12 +1,12 @@
-﻿@using RebacExperiments.Blazor.Shared.Models;
-@using RebacExperiments.Blazor.Infrastructure;
-@using Microsoft.Fast.Components.FluentUI.Utilities;
-@using RebacExperiments.Blazor.Localization;
+﻿@using RebacExperiments.Blazor.Shared.Models
+@using RebacExperiments.Blazor.Infrastructure
+
+@namespace RebacExperiments.Blazor.Components
 
 @inherits FluentComponentBase
 <FluentSelect @attributes="AdditionalAttributes" class="@Class" style="@Style"
               Id="@Id"
-              Title="@Title"
+              AriaLabel="@Title"
               Disabled="@Disabled"
               Items="@FilterOperators"
               OptionText="@(i => Loc.TranslateEnum(i))"

@@ -1,5 +1,9 @@
-﻿@using RebacExperiments.Blazor.Shared.Models;
-@using Microsoft.Fast.Components.FluentUI.Utilities;
+﻿@using Microsoft.FluentUI.AspNetCore.Components
+@using RebacExperiments.Blazor.Shared.Models
+
+@namespace RebacExperiments.Blazor.Components
+
+@typeparam TItem
 
 @inherits FluentComponentBase
 
@@ -10,8 +14,12 @@
             <FilterOperatorSelector FilterOperators="filterOperatorOptions" @bind-FilterOperator="_filterOperator"></FilterOperatorSelector>
         </FluentGridItem>
         <FluentGridItem xs="12">
-            <FluentLabel Typo="Typography.Body">Value:</FluentLabel>
-            <FluentTextField @bind-Value="_value" Disabled="IsValueDisabled()" Class="w-100"></FluentTextField>
+            <FluentLabel Typo="Typography.Body">Lower Value:</FluentLabel>
+            <FluentNumberField @bind-Value="_lowerValue" Disabled="IsLowerValueDisabled()" Class="w-100"></FluentNumberField>
+        </FluentGridItem>
+        <FluentGridItem xs="12">
+            <FluentLabel Typo="Typography.Body">Upper Value:</FluentLabel>
+            <FluentNumberField @bind-Value="_upperValue" Disabled="IsUpperValueDisabled()" Class="w-100"></FluentNumberField>
         </FluentGridItem>
         <FluentGridItem xs="6">
             <FluentButton Class="w-100" Appearance="Appearance.Neutral" OnClick="@(async () => await RemoveFilterAsync())">Reset</FluentButton>

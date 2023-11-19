@@ -22,14 +22,14 @@ namespace RebacExperiments.Blazor.Components
         /// <summary>
         /// Filter Options available for the DateTimeFilter.
         /// </summary>
-        private readonly FilterOperatorEnum[] filterOperatorOptions = new[]
-        {
+        private readonly FilterOperatorEnum[] filterOperatorOptions =
+        [
             FilterOperatorEnum.IsNull,
             FilterOperatorEnum.IsNotNull,
             FilterOperatorEnum.All,
             FilterOperatorEnum.Yes,
             FilterOperatorEnum.No,
-        };
+        ];
 
         protected FilterOperatorEnum _filterOperator { get; set; }
 

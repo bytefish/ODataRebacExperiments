@@ -1,9 +1,9 @@
 ﻿// Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using RebacExperiments.Blazor.Localization;
 using RebacExperiments.Blazor.Shared.Models;
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.Localization;
+using RebacExperiments.Blazor.Localization;
 
 namespace RebacExperiments.Blazor.Components
 {
@@ -14,7 +14,7 @@ namespace RebacExperiments.Blazor.Components
         /// </summary>
         [Inject]
         public IStringLocalizer<SharedResource> Loc { get; set; } = default!;
-        
+
         /// <summary>
         /// Text used on aria-label attribute.
         /// </summary>

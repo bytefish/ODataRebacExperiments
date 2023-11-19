@@ -1,7 +1,7 @@
-﻿@using RebacExperiments.Blazor.Shared.Models;
-@using Microsoft.Fast.Components.FluentUI.Utilities;
+﻿@using Microsoft.FluentUI.AspNetCore.Components
+@using RebacExperiments.Blazor.Shared.Models
 
-@typeparam TItem
+@namespace RebacExperiments.Blazor.Components
 
 @inherits FluentComponentBase
 
@@ -12,12 +12,12 @@
             <FilterOperatorSelector FilterOperators="filterOperatorOptions" @bind-FilterOperator="_filterOperator"></FilterOperatorSelector>
         </FluentGridItem>
         <FluentGridItem xs="12">
-            <FluentLabel Typo="Typography.Body">Lower Value:</FluentLabel>
-            <FluentNumberField @bind-Value="_lowerValue" Disabled="IsLowerValueDisabled()" Class="w-100"></FluentNumberField>
+            <FluentLabel Typo="Typography.Body">Start Date:</FluentLabel>
+            <FluentDatePicker @bind-Value="_startDateTime" Disabled="IsStartDateTimeDisabled()" Class="w-100"></FluentDatePicker>
         </FluentGridItem>
         <FluentGridItem xs="12">
-            <FluentLabel Typo="Typography.Body">Upper Value:</FluentLabel>
-            <FluentNumberField @bind-Value="_upperValue" Disabled="IsUpperValueDisabled()" Class="w-100"></FluentNumberField>
+            <FluentLabel Typo="Typography.Body">End Date:</FluentLabel>
+            <FluentDatePicker @bind-Value="_endDateTime" Disabled="IsEndDateTimeDisabled()" Class="w-100"></FluentDatePicker>
         </FluentGridItem>
         <FluentGridItem xs="6">
             <FluentButton Class="w-100" Appearance="Appearance.Neutral" OnClick="@(async () => await RemoveFilterAsync())">Reset</FluentButton>

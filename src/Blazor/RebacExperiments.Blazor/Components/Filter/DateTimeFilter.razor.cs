@@ -2,6 +2,7 @@
 
 using RebacExperiments.Blazor.Shared.Models;
 using Microsoft.AspNetCore.Components;
+using RebacExperiments.Blazor.Components;
 
 namespace RebacExperiments.Blazor.Components
 {
@@ -59,7 +60,7 @@ namespace RebacExperiments.Blazor.Components
 
         private bool IsEndDateTimeDisabled()
         {
-            return (_filterOperator != FilterOperatorEnum.BetweenInclusive && _filterOperator != FilterOperatorEnum.BetweenExclusive);
+            return _filterOperator != FilterOperatorEnum.BetweenInclusive && _filterOperator != FilterOperatorEnum.BetweenExclusive;
         }
 
         private void SetFilterValues()

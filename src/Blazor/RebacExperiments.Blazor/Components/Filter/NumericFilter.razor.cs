@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Components;
 
 namespace RebacExperiments.Blazor.Components
 {
-    public partial class DateFilter
+    public partial class NumericFilter<TItem>
     {
         /// <summary>
         /// The Property Name.
@@ -18,30 +18,42 @@ namespace RebacExperiments.Blazor.Components
         /// </summary>
         [Parameter]
         public required FilterState FilterState { get; set; }
+
         /// <summary>
-        /// Filter Options available for the DateTimeFilter.
+        /// Filter Options available for the NumericFilter.
         /// </summary>
         private readonly FilterOperatorEnum[] filterOperatorOptions = new[]
         {
+            FilterOperatorEnum.None,
             FilterOperatorEnum.IsNull,
             FilterOperatorEnum.IsNotNull,
             FilterOperatorEnum.IsEqualTo,
             FilterOperatorEnum.IsNotEqualTo,
-            FilterOperatorEnum.After,
             FilterOperatorEnum.IsGreaterThan,
             FilterOperatorEnum.IsGreaterThanOrEqualTo,
-            FilterOperatorEnum.Before,
             FilterOperatorEnum.IsLessThan,
             FilterOperatorEnum.IsLessThanOrEqualTo,
             FilterOperatorEnum.BetweenExclusive,
             FilterOperatorEnum.BetweenInclusive
         };
 
+        private bool IsLowerValueDisabled()
+        {
+            return _filterOperator == FilterOperatorEnum.None
+                || _filterOperator == FilterOperatorEnum.IsNull
+                || _filterOperator == FilterOperatorEnum.IsNotNull;
+        }
+
+        private bool IsUpperValueDisabled()
+        {
+            return _filterOperator != FilterOperatorEnum.BetweenInclusive && _filterOperator != FilterOperatorEnum.BetweenExclusive;
+        }
+
+        protected double? _lowerValue { get; set; }
+
+        protected double? _upperValue { get; set; }
+
         protected FilterOperatorEnum _filterOperator { get; set; }
-
-        protected DateTime? _startDateTime { get; set; }
-
-        protected DateTime? _endDateTime { get; set; }
 
         protected override void OnInitialized()
         {
@@ -50,53 +62,41 @@ namespace RebacExperiments.Blazor.Components
             SetFilterValues();
         }
 
-        private bool IsStartDateTimeDisabled()
-        {
-            return _filterOperator == FilterOperatorEnum.None
-                || _filterOperator == FilterOperatorEnum.IsNull
-                || _filterOperator == FilterOperatorEnum.IsNotNull;
-        }
-
-        private bool IsEndDateTimeDisabled()
-        {
-            return (_filterOperator != FilterOperatorEnum.BetweenInclusive && _filterOperator != FilterOperatorEnum.BetweenExclusive);
-        }
-
         private void SetFilterValues()
         {
             if (!FilterState.Filters.TryGetValue(PropertyName, out var filterDescriptor))
             {
                 _filterOperator = FilterOperatorEnum.None;
-                _startDateTime = null;
-                _endDateTime = null;
+                _lowerValue = null;
+                _upperValue = null;
 
                 return;
             }
 
-            var dateFilterDescriptor = filterDescriptor as DateFilterDescriptor;
+            var numericFilterDescriptor = filterDescriptor as NumericFilterDescriptor;
 
-            if (dateFilterDescriptor == null)
+            if (numericFilterDescriptor == null)
             {
                 _filterOperator = FilterOperatorEnum.None;
-                _startDateTime = null;
-                _endDateTime = null;
+                _lowerValue = null;
+                _upperValue = null;
 
                 return;
             }
 
-            _filterOperator = dateFilterDescriptor.FilterOperator;
-            _startDateTime = dateFilterDescriptor.StartDate?.DateTime;
-            _endDateTime = dateFilterDescriptor.EndDate?.DateTime;
+            _filterOperator = numericFilterDescriptor.FilterOperator;
+            _lowerValue = numericFilterDescriptor.LowerValue;
+            _upperValue = numericFilterDescriptor.UpperValue;
         }
 
         protected virtual Task ApplyFilterAsync()
         {
-            var numericFilter = new DateFilterDescriptor
+            var numericFilter = new NumericFilterDescriptor
             {
                 PropertyName = PropertyName,
                 FilterOperator = _filterOperator,
-                StartDate = _startDateTime,
-                EndDate = _endDateTime,
+                LowerValue = _lowerValue,
+                UpperValue = _upperValue,
             };
 
             return FilterState.AddFilterAsync(numericFilter);
@@ -105,8 +105,8 @@ namespace RebacExperiments.Blazor.Components
         protected virtual async Task RemoveFilterAsync()
         {
             _filterOperator = FilterOperatorEnum.None;
-            _startDateTime = null;
-            _endDateTime = null;
+            _lowerValue = null;
+            _upperValue = null;
 
             await FilterState.RemoveFilterAsync(PropertyName);
         }

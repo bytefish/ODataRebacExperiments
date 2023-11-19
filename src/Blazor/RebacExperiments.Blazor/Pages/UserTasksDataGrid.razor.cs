@@ -2,12 +2,11 @@
 
 using RebacExperiments.Blazor.Components;
 using Microsoft.AspNetCore.Components;
-using Microsoft.Fast.Components.FluentUI;
 using RebacExperiments.Blazor.Infrastructure;
 using RebacExperiments.Shared.ApiSdk.Models;
 using RebacExperiments.Blazor.Extensions;
-using RebacExperiments.Blazor.Shared.Models;
 using RebacExperiments.Blazor.Shared.OData;
+using Microsoft.FluentUI.AspNetCore.Components;
 
 namespace RebacExperiments.Blazor.Pages
 {
